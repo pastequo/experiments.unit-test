@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/pastequo/experiments.unit-test/internal/domain/repo"
+	"github.com/pastequo/experiments.unit-test/internal/utils/observability"
 )
 
 // Orchestration logic
@@ -12,17 +13,23 @@ import (
 type ActAndDo struct {
 	actor repo.Actor
 	doer  repo.Doer
+
+	metrics observability.Metrics
 }
 
-func NewActAndDo(actor repo.Actor, doer repo.Doer) ActAndDo {
+func NewActAndDo(actor repo.Actor, doer repo.Doer, metrics observability.Metrics) ActAndDo {
 	return ActAndDo{
 		actor: actor,
 		doer:  doer,
+
+		metrics: metrics,
 	}
 }
 
 // Sequential implementation, Act first
 func (a ActAndDo) Run() error {
+	a.metrics.Increment("usecase.Run")
+
 	err := a.actor.Act()
 	if err != nil {
 		return fmt.Errorf("failed to Act: %w", err)
@@ -38,6 +45,8 @@ func (a ActAndDo) Run() error {
 
 // // Sequential implementation, Do first
 // func (a ActAndDo) Run() error {
+//	a.metrics.Increment("usecase.Run")
+
 // 	err := a.doer.Do()
 // 	if err != nil {
 // 		return fmt.Errorf("failed to Do: %w", err)
@@ -53,6 +62,8 @@ func (a ActAndDo) Run() error {
 
 // // Concurrent implementation, Act and Do in parallel
 // func (a ActAndDo) Run() error {
+//	a.metrics.Increment("usecase.Run")
+
 // 	g := errgroup.Group{}
 
 // 	g.Go(func() error {
